@@ -595,7 +595,7 @@ function validateForm() {
         document.getElementById('phone-error').style.display = 'block';
         document.getElementById('phone').classList.add('error');
         isValid = false;
-    } else {
+    } else:
         document.getElementById('phone-error').style.display = 'none';
         document.getElementById('phone').classList.remove('error');
     }
@@ -678,6 +678,24 @@ function sendToBot(record) {
         pending.push(data);
         localStorage.setItem('pending_submissions', JSON.stringify(pending));
     }
+}
+
+// Добавить функцию для отправки отложенных данных
+async function sendPendingSubmissions() {
+    const pending = JSON.parse(localStorage.getItem('pending_submissions') || '[]');
+    if (pending.length === 0) return;
+
+    for (const data of pending) {
+        try {
+            tg.sendData(JSON.stringify(data));
+            console.log('Отправлен отложенный запрос:', data);
+        } catch (error) {
+            console.error('Ошибка отправки отложенного запроса:', error);
+        }
+    }
+
+    // Очищаем отложенные запросы после отправки
+    localStorage.removeItem('pending_submissions');
 }
 
 // Показать подтверждение
@@ -843,7 +861,7 @@ function showServiceTypeSelection() {
     });
 }
 
-// Загрузка работ, ожидающих сдачи (исключая appointment)
+// Загрузка работ, ожидающих сдачи
 async function loadPendingWorks() {
     showLoading('Загрузка списка работ...');
 
@@ -857,11 +875,9 @@ async function loadPendingWorks() {
         tg.sendData(JSON.stringify(data));
 
         // Загружаем локальные записи как запасной вариант
-        // Фильтруем только работы для сдачи (исключаем appointment)
         const pendingWorks = appState.records.filter(record =>
             record.service === appState.selectedWorkType &&
-            record.status === 'pending' &&
-            record.service !== 'appointment' // Исключаем записи на прием
+            record.status === 'pending'
         );
 
         appState.pendingWorks = pendingWorks;
@@ -1024,8 +1040,8 @@ function showMtInstallForm() {
     elements.pageTitle.textContent = `Монтаж МТ - ${clientName}`;
 
     // Используем номер ТС из записи, если он есть
-    const vehicleNumber = appState.selectedWork.vehicleNumber && !appState.selectedWork.vehicleUnknown 
-        ? appState.selectedWork.vehicleNumber 
+    const vehicleNumber = appState.selectedWork.vehicleNumber && !appState.selectedWork.vehicleUnknown
+        ? appState.selectedWork.vehicleNumber
         : '';
 
     let html = `
@@ -1116,7 +1132,7 @@ function showMtInstallForm() {
         // Сохраняем данные формы
         const brandModel = document.getElementById('vehicle-brand-model').value.trim();
         const [brand, ...modelParts] = brandModel.split(' ');
-        
+
         appState.mtInstallData = {
             vehicleBrand: brand || '',
             vehicleModel: modelParts.join(' ') || '',
@@ -1508,7 +1524,7 @@ function updateSubmitButton() {
     if (mtSubmitBtn) {
         mtSubmitBtn.disabled = appState.photos.length === 0;
     }
-    
+
     // Для других типов работ
     const submitBtn = document.getElementById('submit-photo-report-btn');
     if (submitBtn) {
@@ -2234,14 +2250,14 @@ function exportData() {
 
     appState.records.forEach(record => {
         csv += `${getClientName(record.client)};${record.organization || ''};${record.contactPerson || ''};${record.phone || ''};${record.date};${record.time};${record.status === 'completed' ? 'Выполнено' : 'Запланировано'};${record.comment || ''};${record.vehicleNumber || ''};${record.vehicleUnknown ? 'Да' : 'Нет'};${record.photo_reports ? (record.photo_reports.length || record.photo_reports) : 0};`;
-        
+
         // Добавляем данные монтажа МТ, если есть
         if (record.mt_install_data) {
             csv += `${record.mt_install_data.mtBrand || ''};${record.mt_install_data.mtNumber || ''};${record.mt_install_data.vehicleBrand || ''} ${record.mt_install_data.vehicleModel || ''}`;
         } else {
             csv += ';;';
         }
-        
+
         csv += '\n';
     });
 
@@ -2354,6 +2370,9 @@ function goBack() {
 
 // Запуск приложения при загрузке страницы
 document.addEventListener('DOMContentLoaded', initApp);
+
+// Отправка отложенных запросов при загрузке
+document.addEventListener('DOMContentLoaded', sendPendingSubmissions);
 
 // Обработка закрытия приложения
 tg.onEvent('viewportChanged', (event) => {
