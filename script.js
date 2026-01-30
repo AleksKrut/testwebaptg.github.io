@@ -51,6 +51,102 @@ const appState = {
     selectedRecord: null
 };
 
+// Конфигурация услуг для клиентов
+const clientServices = {
+    'its': [
+        {
+            id: 'mt_install',
+            name: 'Монтаж МТ',
+            icon: 'fas fa-wrench',
+            description: 'Работы по монтажу мониторинга транспорта'
+        },
+        {
+            id: 'mt_diagnostic',
+            name: 'Диагностика МТ',
+            icon: 'fas fa-stethoscope',
+            description: 'Диагностика мониторинга транспорта'
+        },
+        {
+            id: 'asn_install',
+            name: 'Монтаж АСН',
+            icon: 'fas fa-satellite-dish',
+            description: 'Работы по монтажу системы навигации'
+        },
+        {
+            id: 'asn_diagnostic',
+            name: 'Диагностика АСН',
+            icon: 'fas fa-stethoscope',
+            description: 'Диагностика системы навигации'
+        },
+        {
+            id: 'taho_install',
+            name: 'Монтаж ТАХО',
+            icon: 'fas fa-tachometer-alt',
+            description: 'Работы по установке тахографов',
+            hasSubmenu: true,
+            subservices: [
+                { id: 'taho_basic', name: 'Монтаж ТАХО' },
+                { id: 'taho_ds', name: 'Монтаж ТАХО + ДС' },
+                { id: 'taho_ds_pps', name: 'Монтаж ТАХО+ДС+ППС' }
+            ]
+        },
+        {
+            id: 'taho_demount',
+            name: 'Демонтаж ТАХО',
+            icon: 'fas fa-tachometer-alt',
+            description: 'Работы по демонтажу тахографов'
+        },
+        {
+            id: 'taho_diagnostic',
+            name: 'Диагностика ТАХО',
+            icon: 'fas fa-stethoscope',
+            description: 'Диагностика тахографов'
+        }
+    ],
+    'skai': [
+        {
+            id: 'mt_install',
+            name: 'Монтаж МТ',
+            icon: 'fas fa-wrench',
+            description: 'Работы по монтажу мониторинга транспорта'
+        },
+        {
+            id: 'diagnostic',
+            name: 'Диагностика',
+            icon: 'fas fa-stethoscope',
+            description: 'Диагностические работы любой техники'
+        }
+    ],
+    'tt': [
+        {
+            id: 'mt_install',
+            name: 'Монтаж МТ',
+            icon: 'fas fa-wrench',
+            description: 'Работы по монтажу мониторинга транспорта'
+        },
+        {
+            id: 'diagnostic',
+            name: 'Диагностика',
+            icon: 'fas fa-stethoscope',
+            description: 'Диагностические работы любой техники'
+        }
+    ],
+    'citypoint': [
+        {
+            id: 'mt_install',
+            name: 'Монтаж МТ',
+            icon: 'fas fa-wrench',
+            description: 'Работы по монтажу мониторинга транспорта'
+        },
+        {
+            id: 'diagnostic',
+            name: 'Диагностика',
+            icon: 'fas fa-stethoscope',
+            description: 'Диагностические работы любой техники'
+        }
+    ]
+};
+
 // DOM элементы
 const elements = {
     backBtn: document.getElementById('back-btn'),
@@ -186,6 +282,8 @@ function showClientSelection() {
     // Сбросить выбранные данные
     appState.selectedDate = null;
     appState.selectedTime = null;
+    appState.currentService = null;
+    appState.currentSubservice = null;
     appState.appointmentData = {
         organization: '',
         contactPerson: '',
@@ -229,6 +327,103 @@ function showClientSelection() {
         item.addEventListener('click', () => {
             const clientId = item.dataset.client;
             appState.currentClient = clientId;
+            
+            // Проверяем, есть ли услуги для этого клиента
+            if (clientServices[clientId] && clientServices[clientId].length > 0) {
+                showServiceSelectionForClient(clientId);
+            } else {
+                showCalendar();
+            }
+        });
+    });
+}
+
+// Показать выбор услуги для клиента
+function showServiceSelectionForClient(clientId) {
+    appState.currentPage = 'service-selection';
+    appState.history.push('client-selection');
+    
+    // Сбросить выбранные данные
+    appState.currentService = null;
+    appState.currentSubservice = null;
+    appState.selectedDate = null;
+    appState.selectedTime = null;
+
+    const clientName = getClientName(clientId);
+    elements.pageTitle.textContent = `Выберите услугу - ${clientName}`;
+    elements.backBtn.style.display = 'flex';
+    elements.mainMenu.style.display = 'none';
+
+    const services = clientServices[clientId] || [];
+
+    let html = '<div class="submenu-container">';
+    services.forEach(service => {
+        html += `
+            <div class="submenu-item" data-service="${service.id}" ${service.hasSubmenu ? 'data-has-submenu="true"' : ''}>
+                <i class="${service.icon}"></i>
+                <div class="submenu-text">
+                    <h4>${service.name}</h4>
+                    <p>${service.description}</p>
+                </div>
+                ${service.hasSubmenu ? '<i class="fas fa-chevron-right"></i>' : ''}
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    elements.dynamicContent.innerHTML = html;
+    elements.dynamicContent.style.display = 'block';
+
+    // Добавить обработчики для выбора услуги
+    document.querySelectorAll('.submenu-item[data-service]').forEach(item => {
+        item.addEventListener('click', () => {
+            const serviceId = item.dataset.service;
+            appState.currentService = serviceId;
+            
+            if (item.dataset.hasSubmenu === 'true') {
+                // Показать подменю для ТАХО
+                showTahoSubserviceSelection(serviceId);
+            } else {
+                showCalendar();
+            }
+        });
+    });
+}
+
+// Показать выбор подуслуги для ТАХО
+function showTahoSubserviceSelection(serviceId) {
+    appState.currentPage = 'subservice-selection';
+    appState.history.push('service-selection');
+
+    const clientName = getClientName(appState.currentClient);
+    elements.pageTitle.textContent = `Выберите тип монтажа ТАХО - ${clientName}`;
+
+    // Находим услугу ТАХО
+    const tahoService = clientServices[appState.currentClient]?.find(s => s.id === serviceId);
+    const subservices = tahoService?.subservices || [];
+
+    let html = '<div class="submenu-container">';
+    subservices.forEach(subservice => {
+        html += `
+            <div class="submenu-item" data-subservice="${subservice.id}">
+                <i class="fas fa-tachometer-alt"></i>
+                <div class="submenu-text">
+                    <h4>${subservice.name}</h4>
+                    <p>${tahoService.description}</p>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    elements.dynamicContent.innerHTML = html;
+    elements.dynamicContent.style.display = 'block';
+
+    // Добавить обработчики для выбора подуслуги
+    document.querySelectorAll('.submenu-item[data-subservice]').forEach(item => {
+        item.addEventListener('click', () => {
+            appState.currentSubservice = item.dataset.subservice;
             showCalendar();
         });
     });
@@ -237,10 +432,24 @@ function showClientSelection() {
 // Показать календарь для выбора даты
 function showCalendar() {
     appState.currentPage = 'calendar';
-    appState.history.push('client-selection');
+    
+    // Определяем предыдущую страницу в зависимости от того, откуда пришли
+    if (appState.currentSubservice) {
+        appState.history.push('subservice-selection');
+    } else if (appState.currentService) {
+        appState.history.push('service-selection');
+    } else {
+        appState.history.push('client-selection');
+    }
 
     const clientName = getClientName(appState.currentClient);
-    elements.pageTitle.textContent = `Выберите дату - ${clientName}`;
+    let serviceInfo = '';
+    
+    if (appState.currentService) {
+        serviceInfo = ` - ${getServiceName(appState.currentService, appState.currentSubservice)}`;
+    }
+    
+    elements.pageTitle.textContent = `Выберите дату - ${clientName}${serviceInfo}`;
 
     // Устанавливаем текущий месяц и год
     const today = new Date();
@@ -462,6 +671,12 @@ function showAppointmentForm() {
                 <div class="summary-label">Клиент:</div>
                 <div class="summary-value">${clientName}</div>
             </div>
+            ${appState.currentService ? `
+                <div class="summary-item">
+                    <div class="summary-label">Услуга:</div>
+                    <div class="summary-value">${getServiceName(appState.currentService, appState.currentSubservice)}</div>
+                </div>
+            ` : ''}
             <div class="summary-item">
                 <div class="summary-label">Дата:</div>
                 <div class="summary-value">${dateStr}</div>
@@ -624,7 +839,8 @@ function saveAppointment() {
     const record = {
         id: Date.now(),
         client: appState.currentClient,
-        service: 'appointment',
+        service: appState.currentService,
+        subservice: appState.currentSubservice,
         date: appState.selectedDate.toISOString().split('T')[0],
         time: appState.selectedTime,
         organization: appState.appointmentData.organization,
@@ -657,6 +873,8 @@ function sendToBot(record) {
         const data = {
             action: 'save_appointment',
             client: record.client,
+            service: record.service,
+            subservice: record.subservice,
             date: record.date,
             time: record.time,
             organization: record.organization,
@@ -714,6 +932,7 @@ function showConfirmation(record) {
             
             <div style="background: var(--light-bg); padding: 15px; border-radius: 10px; text-align: left; margin-bottom: 20px;">
                 <p><strong>Клиент:</strong> ${getClientName(record.client)}</p>
+                ${record.service ? `<p><strong>Услуга:</strong> ${getServiceName(record.service, record.subservice)}</p>` : ''}
                 <p><strong>Организация:</strong> ${record.organization}</p>
                 <p><strong>Представитель:</strong> ${record.contactPerson}</p>
                 <p><strong>Телефон:</strong> ${record.phone}</p>
@@ -1726,7 +1945,7 @@ function showRecords() {
                     <span class="record-client">${getClientName(record.client)}</span>
                     <span class="record-date">${dateStr} ${record.time}</span>
                 </div>
-                <div class="record-service">${record.service === 'appointment' ? 'Запись на прием' : getServiceName(record.service, record.subservice)}</div>
+                <div class="record-service">${getServiceDisplayName(record.service)}</div>
                 <div class="record-details">
                     <span class="record-status ${statusClass}">${statusText}</span>
                     ${record.vehicleUnknown ? '<span style="margin-left: 10px;">🚗 Номер ТС: Неизвестен</span>' : ''}
@@ -2186,8 +2405,12 @@ function getTahoSubserviceName(subserviceId) {
 function getServiceDisplayName(serviceType) {
     const displayNames = {
         'mt_install': 'Монтаж МТ',
+        'mt_diagnostic': 'Диагностика МТ',
         'asn_install': 'Монтаж АСН',
+        'asn_diagnostic': 'Диагностика АСН',
         'taho_install': 'Монтаж ТАХО',
+        'taho_demount': 'Демонтаж ТАХО',
+        'taho_diagnostic': 'Диагностика ТАХО',
         'diagnostic': 'Диагностика'
     };
     return displayNames[serviceType] || serviceType;
@@ -2319,8 +2542,18 @@ function showAbout() {
 function goBack() {
     if (appState.currentPage === 'client-selection') {
         showMainMenu();
-    } else if (appState.currentPage === 'calendar') {
+    } else if (appState.currentPage === 'service-selection') {
         showClientSelection();
+    } else if (appState.currentPage === 'subservice-selection') {
+        showServiceSelectionForClient(appState.currentClient);
+    } else if (appState.currentPage === 'calendar') {
+        if (appState.currentSubservice) {
+            showTahoSubserviceSelection(appState.currentService);
+        } else if (appState.currentService) {
+            showServiceSelectionForClient(appState.currentClient);
+        } else {
+            showClientSelection();
+        }
     } else if (appState.currentPage === 'time-selection') {
         showCalendar();
     } else if (appState.currentPage === 'appointment-form') {
@@ -2353,14 +2586,11 @@ function goBack() {
             case 'client-selection':
                 showClientSelection();
                 break;
-            case 'service-type-selection':
-                showServiceTypeSelection();
+            case 'service-selection':
+                showServiceSelectionForClient(appState.currentClient);
                 break;
-            case 'work-list':
-                showWorkList();
-                break;
-            case 'mt-install-form':
-                showWorkList();
+            case 'subservice-selection':
+                showTahoSubserviceSelection(appState.currentService);
                 break;
         }
     } else {
