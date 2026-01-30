@@ -811,57 +811,6 @@ input:checked + .slider:before {
     color: var(--text-primary);
 }
 
-/* Секция услуг (для старой системы) */
-.service-selection {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid var(--border-color);
-}
-
-.service-category {
-    margin-bottom: 20px;
-}
-
-.service-category h4 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: var(--primary-color);
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.service-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.service-option {
-    padding: 10px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-    text-align: center;
-    flex: 1;
-    min-width: 120px;
-}
-
-.service-option:hover {
-    background: var(--primary-color);
-    color: white;
-}
-
-.service-option.selected {
-    background: var(--success-color);
-    color: white;
-    font-weight: bold;
-}
-
 /* Фотоотчеты */
 .photo-upload-container {
     background: var(--card-bg);
