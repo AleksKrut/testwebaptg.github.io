@@ -595,7 +595,7 @@ function validateForm() {
         document.getElementById('phone-error').style.display = 'block';
         document.getElementById('phone').classList.add('error');
         isValid = false;
-    } else:
+    } else {
         document.getElementById('phone-error').style.display = 'none';
         document.getElementById('phone').classList.remove('error');
     }
