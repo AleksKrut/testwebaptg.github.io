@@ -327,7 +327,7 @@ function showClientSelection() {
         item.addEventListener('click', () => {
             const clientId = item.dataset.client;
             appState.currentClient = clientId;
-            
+
             // Проверяем, есть ли услуги для этого клиента
             if (clientServices[clientId] && clientServices[clientId].length > 0) {
                 showServiceSelectionForClient(clientId);
@@ -342,7 +342,7 @@ function showClientSelection() {
 function showServiceSelectionForClient(clientId) {
     appState.currentPage = 'service-selection';
     appState.history.push('client-selection');
-    
+
     // Сбросить выбранные данные
     appState.currentService = null;
     appState.currentSubservice = null;
@@ -379,7 +379,7 @@ function showServiceSelectionForClient(clientId) {
         item.addEventListener('click', () => {
             const serviceId = item.dataset.service;
             appState.currentService = serviceId;
-            
+
             if (item.dataset.hasSubmenu === 'true') {
                 // Показать подменю для ТАХО
                 showTahoSubserviceSelection(serviceId);
@@ -432,7 +432,7 @@ function showTahoSubserviceSelection(serviceId) {
 // Показать календарь для выбора даты
 function showCalendar() {
     appState.currentPage = 'calendar';
-    
+
     // Определяем предыдущую страницу в зависимости от того, откуда пришли
     if (appState.currentSubservice) {
         appState.history.push('subservice-selection');
@@ -444,11 +444,11 @@ function showCalendar() {
 
     const clientName = getClientName(appState.currentClient);
     let serviceInfo = '';
-    
+
     if (appState.currentService) {
         serviceInfo = ` - ${getServiceName(appState.currentService, appState.currentSubservice)}`;
     }
-    
+
     elements.pageTitle.textContent = `Выберите дату - ${clientName}${serviceInfo}`;
 
     // Устанавливаем текущий месяц и год
