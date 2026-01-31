@@ -1,3 +1,4 @@
+
 :root {
     --primary-color: #007aff;
     --secondary-color: #5856d6;
@@ -1045,6 +1046,62 @@ input:checked + .slider:before {
     line-height: 1.3;
 }
 
+/* Стили для категорий ТАХО */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.category-item:hover {
+    border-color: var(--primary-color);
+    background: rgba(0, 122, 255, 0.05);
+}
+
+.category-item.selected {
+    border-color: var(--success-color);
+    background: rgba(76, 217, 100, 0.1);
+}
+
+.category-item i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
+
+.category-item.selected i {
+    color: var(--success-color);
+}
+
+.category-item span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Контейнеры форм */
+.taho-work-form-container,
+.simple-diagnostic-form-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
 /* Индикатор загрузки */
 .loading-overlay {
     position: fixed;
@@ -1159,6 +1216,10 @@ input:checked + .slider:before {
 
     .photo-preview-container {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
     }
 }
 
