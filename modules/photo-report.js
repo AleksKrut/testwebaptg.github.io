@@ -275,25 +275,127 @@ function showWorkList() {
     });
 
     document.getElementById('select-work-btn').addEventListener('click', () => {
-        // Определяем, какую форму показывать
-        if (appState.selectedWorkType === 'mt_install') {
-            showMtInstallForm();
-        } else if (appState.selectedWorkType === 'taho_install' || appState.selectedWorkType === 'taho_diagnostic') {
-            showTahoWorkForm();
-        } else if (appState.selectedWorkType === 'diagnostic' && 
-                   (appState.selectedWork.client === 'skai' || 
-                    appState.selectedWork.client === 'tt' || 
-                    appState.selectedWork.client === 'citypoint')) {
-            showSimpleDiagnosticForm();
-        } else {
-            showPhotoUpload();
+        // Сначала показываем форму с данными организации
+        showOrganizationFormForWork();
+    });
+}
+
+function showOrganizationFormForWork() {
+    appState.currentPage = 'work-organization-form';
+    appState.history.push('work-list');
+
+    const clientName = getClientName(appState.selectedWork.client);
+    const serviceName = getServiceDisplayName(appState.selectedWorkType);
+
+    elements.pageTitle.textContent = `Данные организации - ${clientName}`;
+
+    let html = `
+        <div class="form-section">
+            <div class="form-section-title">🏢 Данные организации для отчета</div>
+            
+            <div class="input-group">
+                <label class="required">Организация</label>
+                <input type="text" class="form-input" id="work-organization" 
+                       placeholder="Введите название организации" 
+                       value="${appState.selectedWork.organization || ''}">
+                <div class="error-message" id="work-organization-error">Пожалуйста, введите название организации</div>
+            </div>
+            
+            <div class="input-group">
+                <label class="required">Представитель</label>
+                <input type="text" class="form-input" id="work-contact-person" 
+                       placeholder="ФИО представителя" 
+                       value="${appState.selectedWork.contactPerson || ''}">
+                <div class="error-message" id="work-contact-person-error">Пожалуйста, введите ФИО представителя</div>
+            </div>
+            
+            <div class="input-group">
+                <label class="required">Телефон</label>
+                <input type="tel" class="form-input" id="work-phone" 
+                       placeholder="+7 (999) 123-45-67" 
+                       value="${appState.selectedWork.phone || ''}">
+                <div class="error-message" id="work-phone-error">Пожалуйста, введите корректный номер телефона</div>
+            </div>
+        </div>
+        
+        <button class="btn btn-primary" id="continue-to-work-form">
+            <i class="fas fa-arrow-right btn-icon"></i>
+            Продолжить
+        </button>
+    `;
+
+    elements.dynamicContent.innerHTML = html;
+    elements.dynamicContent.style.display = 'block';
+
+    document.getElementById('continue-to-work-form').addEventListener('click', () => {
+        if (validateWorkOrganizationForm()) {
+            // Сохраняем данные организации для отчета
+            appState.selectedWork.organization = document.getElementById('work-organization').value.trim();
+            appState.selectedWork.contactPerson = document.getElementById('work-contact-person').value.trim();
+            appState.selectedWork.phone = document.getElementById('work-phone').value.trim();
+
+            // Переходим к соответствующей форме работы
+            if (appState.selectedWorkType === 'mt_install') {
+                showMtInstallForm();
+            } else if (appState.selectedWorkType === 'taho_install' || appState.selectedWorkType === 'taho_diagnostic') {
+                showTahoWorkForm();
+            } else if (appState.selectedWorkType === 'diagnostic' &&
+                       (appState.selectedWork.client === 'skai' ||
+                        appState.selectedWork.client === 'tt' ||
+                        appState.selectedWork.client === 'citypoint')) {
+                showSimpleDiagnosticForm();
+            } else {
+                showPhotoUpload();
+            }
         }
     });
+
+    document.getElementById('work-organization').addEventListener('input', validateWorkOrganizationForm);
+    document.getElementById('work-contact-person').addEventListener('input', validateWorkOrganizationForm);
+    document.getElementById('work-phone').addEventListener('input', validateWorkOrganizationForm);
+}
+
+function validateWorkOrganizationForm() {
+    const organization = document.getElementById('work-organization').value.trim();
+    const contactPerson = document.getElementById('work-contact-person').value.trim();
+    const phone = document.getElementById('work-phone').value.trim();
+
+    let isValid = true;
+
+    if (!organization) {
+        document.getElementById('work-organization-error').style.display = 'block';
+        document.getElementById('work-organization').classList.add('error');
+        isValid = false;
+    } else {
+        document.getElementById('work-organization-error').style.display = 'none';
+        document.getElementById('work-organization').classList.remove('error');
+    }
+
+    if (!contactPerson) {
+        document.getElementById('work-contact-person-error').style.display = 'block';
+        document.getElementById('work-contact-person').classList.add('error');
+        isValid = false;
+    } else {
+        document.getElementById('work-contact-person-error').style.display = 'none';
+        document.getElementById('work-contact-person').classList.remove('error');
+    }
+
+    const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+    if (!phone || !phoneRegex.test(phone.replace(/\D/g, ''))) {
+        document.getElementById('work-phone-error').style.display = 'block';
+        document.getElementById('work-phone').classList.add('error');
+        isValid = false;
+    } else {
+        document.getElementById('work-phone-error').style.display = 'none';
+        document.getElementById('work-phone').classList.remove('error');
+    }
+
+    return isValid;
 }
 
 function showMtInstallForm() {
     appState.currentPage = 'mt-install-form';
-    appState.history.push('work-list');
+    appState.history.push('work-organization-form');
 
     const clientName = getClientName(appState.selectedWork.client);
     elements.pageTitle.textContent = `Монтаж МТ - ${clientName}`;
@@ -413,7 +515,7 @@ function showMtInstallForm() {
             }
         };
 
-        if (!appState.mtInstallData.vehicleBrand || !appState.mtInstallData.mtBrand || 
+        if (!appState.mtInstallData.vehicleBrand || !appState.mtInstallData.mtBrand ||
             !appState.mtInstallData.mtNumber || !appState.mtInstallData.skziNumber) {
             tg.showAlert('Пожалуйста, заполните все обязательные поля: Марка/модель ТС, Марка МТ, Номер МТ, Номер СКЗИ');
             return;
@@ -546,37 +648,58 @@ async function submitMtPhotoReport() {
         const photosBase64 = await Promise.all(photoPromises);
 
         const reportData = {
-            action: 'submit_mt_install_report',
+            action: 'submit_complete_work_report',
             record_id: appState.selectedWork.id,
+            client: appState.selectedWork.client,
             service_type: 'mt_install',
+            organization: appState.selectedWork.organization,
+            contact_person: appState.selectedWork.contactPerson,
+            phone: appState.selectedWork.phone,
+            vehicle_number: appState.mtInstallData.vehicleNumber || appState.selectedWork.vehicleNumber,
+            vehicle_unknown: appState.selectedWork.vehicleUnknown,
+            date: appState.selectedWork.date,
+            time: appState.selectedWork.time,
             photos: photosBase64,
-            mt_install_data: appState.mtInstallData,
-            comment: document.getElementById('photo-comment')?.value.trim() || ''
+            work_data: {
+                type: 'mt_install',
+                data: appState.mtInstallData
+            },
+            comment: document.getElementById('photo-comment')?.value.trim() || '',
+            record_comment: appState.selectedWork.comment || ''
         };
 
+        // Отправляем данные через Telegram WebApp
         tg.sendData(JSON.stringify(reportData));
+
+        // Также отправляем в Telegram чат
+        await sendWorkReportToTelegram(reportData);
 
         hideLoading();
 
-        showModal(
-            '✅ Фотоотчет отправлен!',
-            `Фотоотчет по монтажу МТ успешно отправлен в рабочий чат.<br><br>
-             📸 Отправлено фото: ${appState.photos.length}<br>
-             🚗 ТС: ${appState.mtInstallData.vehicleBrand} ${appState.mtInstallData.vehicleModel}<br>
-             📱 МТ: ${appState.mtInstallData.mtBrand} №${appState.mtInstallData.mtNumber}<br>
-             🔑 СКЗИ: ${appState.mtInstallData.skziNumber}<br><br>
-             Фото будут проверены менеджером.`
-        );
-
+        // Обновляем запись в локальном хранилище
         const workIndex = appState.records.findIndex(r => r.id === appState.selectedWork.id);
         if (workIndex !== -1) {
             appState.records[workIndex].status = 'completed';
             appState.records[workIndex].photo_reports = appState.photos.length;
             appState.records[workIndex].photo_reports_data = appState.photos;
             appState.records[workIndex].mt_install_data = appState.mtInstallData;
+            appState.records[workIndex].completedAt = new Date().toISOString();
             localStorage.setItem('work_records', JSON.stringify(appState.records));
             updateRecordCount();
         }
+
+        showModal(
+            '✅ Фотоотчет отправлен!',
+            `Фотоотчет по монтажу МТ успешно отправлен в рабочий чат.<br><br>
+             📸 Отправлено фото: ${appState.photos.length}<br>
+             🏢 Организация: ${appState.selectedWork.organization}<br>
+             👤 Представитель: ${appState.selectedWork.contactPerson}<br>
+             📞 Телефон: ${appState.selectedWork.phone}<br>
+             🚗 ТС: ${appState.mtInstallData.vehicleBrand} ${appState.mtInstallData.vehicleModel}<br>
+             📱 МТ: ${appState.mtInstallData.mtBrand} №${appState.mtInstallData.mtNumber}<br>
+             🔑 СКЗИ: ${appState.mtInstallData.skziNumber}<br><br>
+             Все данные отправлены в указанный чат.`
+        );
 
         setTimeout(() => {
             closeModal();
@@ -593,7 +716,7 @@ async function submitMtPhotoReport() {
 // Функции для ТАХО работ
 function showTahoWorkForm() {
     appState.currentPage = 'taho-work-form';
-    appState.history.push('work-list');
+    appState.history.push('work-organization-form');
 
     const clientName = getClientName(appState.selectedWork.client);
     const serviceName = getServiceDisplayName(appState.selectedWorkType);
@@ -763,7 +886,7 @@ function showTahoWorkForm() {
         appState.tahoWorkData.tahoBrand = document.getElementById('taho-brand').value.trim();
         appState.tahoWorkData.tahoNumber = document.getElementById('taho-number').value.trim();
         appState.tahoWorkData.skziNumber = document.getElementById('taho-skzi-number').value.trim();
-        
+
         appState.tahoWorkData.photoTypes = {
             tahoLabel: document.getElementById('photo-taho-label').checked,
             skziCertificate: document.getElementById('photo-skzi-certificate').checked,
@@ -774,8 +897,8 @@ function showTahoWorkForm() {
         };
 
         // Валидация
-        if (!appState.tahoWorkData.vehicleBrand || !appState.tahoWorkData.vehicleModel || 
-            !appState.tahoWorkData.tahoBrand || !appState.tahoWorkData.tahoNumber || 
+        if (!appState.tahoWorkData.vehicleBrand || !appState.tahoWorkData.vehicleModel ||
+            !appState.tahoWorkData.tahoBrand || !appState.tahoWorkData.tahoNumber ||
             !appState.tahoWorkData.skziNumber) {
             tg.showAlert('Пожалуйста, заполните все обязательные поля');
             return;
@@ -920,16 +1043,32 @@ async function submitTahoPhotoReport() {
         const photosBase64 = await Promise.all(photoPromises);
 
         const reportData = {
-            action: 'submit_taho_work_report',
+            action: 'submit_complete_work_report',
             record_id: appState.selectedWork.id,
+            client: appState.selectedWork.client,
             service_type: appState.selectedWorkType,
-            category: appState.tahoWorkData.category,
+            organization: appState.selectedWork.organization,
+            contact_person: appState.selectedWork.contactPerson,
+            phone: appState.selectedWork.phone,
+            vehicle_number: appState.tahoWorkData.vehicleNumber || appState.selectedWork.vehicleNumber,
+            vehicle_unknown: appState.selectedWork.vehicleUnknown,
+            date: appState.selectedWork.date,
+            time: appState.selectedWork.time,
             photos: photosBase64,
-            taho_work_data: appState.tahoWorkData,
-            comment: document.getElementById('photo-comment')?.value.trim() || ''
+            work_data: {
+                type: 'taho',
+                category: appState.tahoWorkData.category,
+                data: appState.tahoWorkData
+            },
+            comment: document.getElementById('photo-comment')?.value.trim() || '',
+            record_comment: appState.selectedWork.comment || ''
         };
 
+        // Отправляем данные через Telegram WebApp
         tg.sendData(JSON.stringify(reportData));
+
+        // Также отправляем в Telegram чат
+        await sendWorkReportToTelegram(reportData);
 
         hideLoading();
 
@@ -949,10 +1088,13 @@ async function submitTahoPhotoReport() {
             '✅ Фотоотчет отправлен!',
             `Фотоотчет по ${getServiceDisplayName(appState.selectedWorkType)} успешно отправлен.<br><br>
              📸 Отправлено фото: ${appState.photos.length}<br>
+             🏢 Организация: ${appState.selectedWork.organization}<br>
+             👤 Представитель: ${appState.selectedWork.contactPerson}<br>
+             📞 Телефон: ${appState.selectedWork.phone}<br>
              🚗 ТС: ${appState.tahoWorkData.vehicleBrand} ${appState.tahoWorkData.vehicleModel}<br>
              📱 ТАХО: ${appState.tahoWorkData.tahoBrand} №${appState.tahoWorkData.tahoNumber}<br>
              🔑 СКЗИ: ${appState.tahoWorkData.skziNumber}<br><br>
-             Фото будут проверены менеджером.`
+             Все данные отправлены в указанный чат.`
         );
 
         setTimeout(() => {
@@ -970,7 +1112,7 @@ async function submitTahoPhotoReport() {
 // Функция для сдачи работ клиентов SKAI, ТТ, CityPoint (простая диагностика)
 function showSimpleDiagnosticForm() {
     appState.currentPage = 'simple-diagnostic-form';
-    appState.history.push('work-list');
+    appState.history.push('work-organization-form');
 
     const clientName = getClientName(appState.selectedWork.client);
     elements.pageTitle.textContent = `Диагностика - ${clientName}`;
@@ -1042,7 +1184,7 @@ function showSimpleDiagnosticForm() {
         };
 
         // Валидация
-        if (!appState.simpleDiagnosticData.vehicleBrand || !appState.simpleDiagnosticData.vehicleModel || 
+        if (!appState.simpleDiagnosticData.vehicleBrand || !appState.simpleDiagnosticData.vehicleModel ||
             !appState.simpleDiagnosticData.vehicleNumber) {
             tg.showAlert('Пожалуйста, заполните марку, модель и гос. номер ТС');
             return;
@@ -1150,15 +1292,31 @@ async function submitSimpleDiagnosticPhotoReport() {
         const photosBase64 = await Promise.all(photoPromises);
 
         const reportData = {
-            action: 'submit_simple_diagnostic_report',
+            action: 'submit_complete_work_report',
             record_id: appState.selectedWork.id,
+            client: appState.selectedWork.client,
             service_type: 'diagnostic',
+            organization: appState.selectedWork.organization,
+            contact_person: appState.selectedWork.contactPerson,
+            phone: appState.selectedWork.phone,
+            vehicle_number: appState.simpleDiagnosticData.vehicleNumber || appState.selectedWork.vehicleNumber,
+            vehicle_unknown: appState.selectedWork.vehicleUnknown,
+            date: appState.selectedWork.date,
+            time: appState.selectedWork.time,
             photos: photosBase64,
-            diagnostic_data: appState.simpleDiagnosticData,
-            comment: document.getElementById('photo-comment')?.value.trim() || ''
+            work_data: {
+                type: 'diagnostic',
+                data: appState.simpleDiagnosticData
+            },
+            comment: document.getElementById('photo-comment')?.value.trim() || '',
+            record_comment: appState.selectedWork.comment || ''
         };
 
+        // Отправляем данные через Telegram WebApp
         tg.sendData(JSON.stringify(reportData));
+
+        // Также отправляем в Telegram чат
+        await sendWorkReportToTelegram(reportData);
 
         hideLoading();
 
@@ -1178,9 +1336,12 @@ async function submitSimpleDiagnosticPhotoReport() {
             '✅ Фотоотчет отправлен!',
             `Фотоотчет по диагностике успешно отправлен.<br><br>
              📸 Отправлено фото: ${appState.photos.length}<br>
+             🏢 Организация: ${appState.selectedWork.organization}<br>
+             👤 Представитель: ${appState.selectedWork.contactPerson}<br>
+             📞 Телефон: ${appState.selectedWork.phone}<br>
              🚗 ТС: ${appState.simpleDiagnosticData.vehicleBrand} ${appState.simpleDiagnosticData.vehicleModel}<br>
              🏷️ Гос. номер: ${appState.simpleDiagnosticData.vehicleNumber}<br><br>
-             Фото будут проверены менеджером.`
+             Все данные отправлены в указанный чат.`
         );
 
         setTimeout(() => {
@@ -1197,7 +1358,7 @@ async function submitSimpleDiagnosticPhotoReport() {
 
 function showPhotoUpload() {
     appState.currentPage = 'photo-upload';
-    appState.history.push('work-list');
+    appState.history.push('work-organization-form');
 
     const serviceName = getServiceDisplayName(appState.selectedWorkType);
     const clientName = getClientName(appState.selectedWork.client);
@@ -1410,14 +1571,30 @@ async function submitPhotoReport() {
         const photosBase64 = await Promise.all(photoPromises);
 
         const reportData = {
-            action: 'submit_photo_report',
+            action: 'submit_complete_work_report',
             record_id: appState.selectedWork.id,
+            client: appState.selectedWork.client,
             service_type: appState.selectedWorkType,
+            organization: appState.selectedWork.organization,
+            contact_person: appState.selectedWork.contactPerson,
+            phone: appState.selectedWork.phone,
+            vehicle_number: appState.selectedWork.vehicleNumber,
+            vehicle_unknown: appState.selectedWork.vehicleUnknown,
+            date: appState.selectedWork.date,
+            time: appState.selectedWork.time,
             photos: photosBase64,
-            comment: document.getElementById('photo-comment')?.value.trim() || ''
+            work_data: {
+                type: 'general'
+            },
+            comment: document.getElementById('photo-comment')?.value.trim() || '',
+            record_comment: appState.selectedWork.comment || ''
         };
 
+        // Отправляем данные через Telegram WebApp
         tg.sendData(JSON.stringify(reportData));
+
+        // Также отправляем в Telegram чат
+        await sendWorkReportToTelegram(reportData);
 
         hideLoading();
 
@@ -1425,9 +1602,12 @@ async function submitPhotoReport() {
             '✅ Фотоотчет отправлен!',
             `Фотоотчет успешно отправлен в рабочий чат.<br><br>
              📸 Отправлено фото: ${appState.photos.length}<br>
+             🏢 Организация: ${appState.selectedWork.organization}<br>
+             👤 Представитель: ${appState.selectedWork.contactPerson}<br>
+             📞 Телефон: ${appState.selectedWork.phone}<br>
              🔧 Тип работы: ${getServiceDisplayName(appState.selectedWorkType)}<br>
              👤 Клиент: ${getClientName(appState.selectedWork.client)}<br><br>
-             Фото будут проверены менеджером.`
+             Все данные отправлены в указанный чат.`
         );
 
         const workIndex = appState.records.findIndex(r => r.id === appState.selectedWork.id);
@@ -1455,6 +1635,8 @@ async function submitPhotoReport() {
 window.showServiceTypeSelection = showServiceTypeSelection;
 window.loadPendingWorks = loadPendingWorks;
 window.showWorkList = showWorkList;
+window.showOrganizationFormForWork = showOrganizationFormForWork;
+window.validateWorkOrganizationForm = validateWorkOrganizationForm;
 window.showMtInstallForm = showMtInstallForm;
 window.showMtPhotoUpload = showMtPhotoUpload;
 window.submitMtPhotoReport = submitMtPhotoReport;

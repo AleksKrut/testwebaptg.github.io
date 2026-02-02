@@ -1247,3 +1247,316 @@ input:checked + .slider:before {
         width: 100%;
     }
 }
+
+/* Стили для формы организации при сдаче работы */
+.work-organization-form {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.work-organization-form .form-section {
+    margin-bottom: 20px;
+}
+
+.work-organization-form .input-group {
+    margin-bottom: 15px;
+}
+
+.work-organization-form .btn {
+    margin-top: 20px;
+}
+
+/* Улучшенные стили для чекбоксов */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--light-bg);
+    transition: all 0.3s;
+    border: 1px solid var(--border-color);
+}
+
+.checkbox-group:hover {
+    background: rgba(0, 122, 255, 0.1);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.checkbox-group label {
+    cursor: pointer;
+    user-select: none;
+    font-size: 15px;
+    color: var(--text-primary);
+    flex-grow: 1;
+}
+
+/* Стили для категорий работы */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    background: var(--light-bg);
+}
+
+.category-item:hover {
+    border-color: var(--primary-color);
+    background: rgba(0, 122, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.category-item.selected {
+    border-color: var(--success-color);
+    background: rgba(76, 217, 100, 0.1);
+    box-shadow: 0 4px 12px rgba(76, 217, 100, 0.2);
+}
+
+.category-item i {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.category-item.selected i {
+    color: var(--success-color);
+}
+
+.category-item span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Улучшенные стили для фотоотчетов */
+.photo-preview-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.photo-preview {
+    position: relative;
+    width: 100%;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.photo-preview:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-preview .remove-photo {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0.8;
+    transition: all 0.3s;
+}
+
+.photo-preview .remove-photo:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.add-photo-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100px;
+    border: 2px dashed var(--border-color);
+    border-radius: 10px;
+    background: var(--light-bg);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-photo-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(0, 122, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.add-photo-btn i {
+    font-size: 28px;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.add-photo-btn span {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Улучшенные стили для форм */
+.form-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Стили для сводки в фотоотчетах */
+.summary-container {
+    background: var(--light-bg);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.summary-item {
+    display: flex;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.summary-label {
+    font-weight: 600;
+    min-width: 140px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.summary-value {
+    flex-grow: 1;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .photo-preview-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .summary-label {
+        min-width: 120px;
+        font-size: 13px;
+    }
+
+    .summary-value {
+        font-size: 13px;
+    }
+
+    .checkbox-group {
+        padding: 8px;
+    }
+
+    .checkbox-group label {
+        font-size: 14px;
+    }
+}
+
+/* Анимации для улучшения UX */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section, .work-item, .record-item {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Стили для состояний загрузки */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid var(--border-color);
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: white;
+    margin-top: 20px;
+    font-size: 16px;
+    text-align: center;
+}

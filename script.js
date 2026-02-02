@@ -23,6 +23,9 @@ function initApp() {
 
     // Показать главное меню
     showMainMenu();
+
+    // Попробовать отправить отложенные отчеты
+    retryPendingWorkReports();
 }
 
 // Настройка обработчиков событий
@@ -408,7 +411,10 @@ function deleteRecord(recordId) {
 document.addEventListener('DOMContentLoaded', initApp);
 
 // Отправка отложенных запросов при загрузке
-document.addEventListener('DOMContentLoaded', sendPendingSubmissions);
+document.addEventListener('DOMContentLoaded', () => {
+    sendPendingSubmissions();
+    retryPendingWorkReports();
+});
 
 // Обработка закрытия приложения
 tg.onEvent('viewportChanged', (event) => {
